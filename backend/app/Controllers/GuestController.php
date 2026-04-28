@@ -50,6 +50,16 @@ class GuestController extends ResourceController
             $location = !empty($input['location']) ? htmlspecialchars(strip_tags($input['location'])) : null;
             $instagram = !empty($input['instagram']) ? htmlspecialchars(strip_tags($input['instagram'])) : null;
             $profession = !empty($input['profession']) ? htmlspecialchars(strip_tags($input['profession'])) : null;
+            
+            // Handle file upload
+            $idProofPath = null;
+            $file = $this->request->getFile('id_proof');
+            if ($file && $file->isValid() && !$file->hasMoved()) {
+                $newName = $file->getRandomName();
+                // Ensure writable/uploads folder exists in backend
+                $file->move(WRITEPATH . 'uploads/', $newName);
+                $idProofPath = 'uploads/' . $newName;
+            }
 
             // Insert into guest_checkins table
             $data = [
@@ -58,7 +68,8 @@ class GuestController extends ResourceController
                 'phone' => $phone,
                 'location' => $location,
                 'instagram' => $instagram,
-                'profession' => $profession
+                'profession' => $profession,
+                'id_proof' => $idProofPath
             ];
 
             $this->db->table('guest_checkins')->insert($data);

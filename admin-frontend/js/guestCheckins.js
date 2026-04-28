@@ -201,6 +201,10 @@ const GuestCheckins = {
             <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Checked In On</p>
             <p class="font-bold text-gray-800">${UI.formatDate(checkin.created_at)}</p>
           </div>
+          <div class="col-span-2 mt-4">
+            <p class="text-xs text-gray-500 uppercase font-semibold mb-2">ID Proof Document</p>
+            ${checkin.id_proof ? `<a href="http://localhost:8080/${checkin.id_proof}" target="_blank"><img src="http://localhost:8080/${checkin.id_proof}" alt="ID Proof" class="w-full h-auto max-h-64 object-contain rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow bg-white p-1"></a>` : '<p class="font-bold text-gray-800 bg-gray-100 p-4 rounded-xl inline-block">No ID proof provided</p>'}
+          </div>
         </div>
       </div>
     `;

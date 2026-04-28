@@ -112,6 +112,8 @@ const UI = {
         Settings.init();
       } else if (route === 'guest-checkins') {
         GuestCheckins.init();
+      } else if (route === 'stays') {
+        Stays.init();
       }
       
     } catch (error) {
@@ -138,33 +140,41 @@ const UI = {
     try {
       const stats = await API.getStats();
       document.getElementById('stat-total-bookings').textContent = stats.totalBookings;
-      document.getElementById('stat-today-bookings').textContent = stats.todayBookings;
-      document.getElementById('stat-upcoming').textContent = stats.upcomingCheckins;
+      document.getElementById('stat-today-checkins').textContent = stats.todayCheckins;
+      document.getElementById('stat-tomorrow-checkins').textContent = stats.tomorrowCheckins;
       document.getElementById('stat-total-guests').textContent = stats.totalGuests;
 
       const bookings = await API.getBookings();
-      const recent = bookings.slice(0, 5); // top 5
-      const tbody = document.getElementById('recent-bookings-list');
-      
-      if (recent.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-gray-500">No recent bookings</td></tr>`;
-        return;
-      }
+      const today = new Date().toISOString().split('T')[0];
+      const tomorrowDate = new Date();
+      tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+      const tomorrow = tomorrowDate.toISOString().split('T')[0];
 
-      tbody.innerHTML = recent.map(b => `
-        <tr class="hover:bg-gray-50 transition-colors">
-          <td class="p-4">
-            <p class="font-medium text-gray-900">${b.guest_name}</p>
-            <p class="text-xs text-gray-500">${b.mobile}</p>
-          </td>
-          <td class="p-4">
-            <p class="text-gray-800">${this.formatDate(b.checkin_date)}</p>
-          </td>
-          <td class="p-4">
-            ${this.getStatusBadge(b.status)}
-          </td>
-        </tr>
-      `).join('');
+      const todayGuests = bookings.filter(b => b.checkin_date === today && b.status !== 'cancelled');
+      const tomorrowGuests = bookings.filter(b => b.checkin_date === tomorrow && b.status !== 'cancelled');
+
+      const renderList = (data, elementId, emptyText) => {
+        const tbody = document.getElementById(elementId);
+        if (!tbody) return;
+        if (data.length === 0) {
+          tbody.innerHTML = `<tr><td class="p-8 text-center text-gray-500 italic">${emptyText}</td></tr>`;
+          return;
+        }
+        tbody.innerHTML = data.map(b => `
+          <tr class="hover:bg-gray-50 transition-colors">
+            <td class="p-4">
+              <p class="font-bold text-gray-900">${b.guest_name}</p>
+              <p class="text-xs text-gray-500 flex items-center gap-1 mt-1"><i class='bx bx-phone'></i> ${b.mobile}</p>
+            </td>
+            <td class="p-4 text-right">
+              ${this.getStatusBadge(b.status)}
+            </td>
+          </tr>
+        `).join('');
+      };
+
+      renderList(todayGuests, 'today-guests-list', 'No guests checking in today');
+      renderList(tomorrowGuests, 'tomorrow-guests-list', 'No guests checking in tomorrow');
     } catch (e) {
       this.showToast('Failed to load dashboard data', 'error');
     }

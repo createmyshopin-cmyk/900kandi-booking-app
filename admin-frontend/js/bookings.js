@@ -222,6 +222,12 @@ const Bookings = {
           ${(this.role === 'admin' || this.role === 'reservation_manager') && booking.status !== 'cancelled' ? 
             `<button onclick="Bookings.updateStatus(${booking.id}, 'cancelled')" class="flex-1 bg-red-100 hover:bg-red-200 text-red-700 py-3 rounded-xl font-bold transition-colors shadow-sm min-w-[140px]">Cancel</button>` : ''
           }
+          ${(this.role === 'admin' || this.role === 'guest_manager') && booking.status !== 'checked-in' ? 
+            `<button onclick="Bookings.updateStatus(${booking.id}, 'checked-in')" class="flex-1 bg-green-100 hover:bg-green-200 text-green-700 py-3 rounded-xl font-bold transition-colors shadow-sm min-w-[140px]">Check In</button>` : ''
+          }
+          ${(this.role === 'admin' || this.role === 'guest_manager') && booking.status !== 'checked-out' ? 
+            `<button onclick="Bookings.updateStatus(${booking.id}, 'checked-out')" class="flex-1 bg-orange-100 hover:bg-orange-200 text-orange-700 py-3 rounded-xl font-bold transition-colors shadow-sm min-w-[140px]">Check Out</button>` : ''
+          }
         </div>
       </div>
     `;
@@ -230,7 +236,10 @@ const Bookings = {
   },
 
   async updateStatus(id, newStatus) {
-    if (this.role === 'guest_manager') return;
+    if (this.role === 'guest_manager' && !['checked-in', 'checked-out'].includes(newStatus)) {
+      UI.showToast('You only have permission to Check-in and Check-out', 'error');
+      return;
+    }
     try {
       await API.updateBookingStatus(id, newStatus, this.role);
       UI.showToast(`Booking marked as ${newStatus}`);
@@ -261,8 +270,13 @@ const Bookings = {
           <i class='bx bx-trash text-3xl'></i>
         </div>
         <h3 class="text-xl font-bold text-gray-900 mb-2">Delete Booking?</h3>
-        <p class="text-gray-500 mb-8">Are you sure you want to delete booking #${id}? This action cannot be undone.</p>
+        <p class="text-gray-500 mb-6">Are you sure you want to delete booking #${id}? This action cannot be undone.</p>
         
+        <div class="mb-8">
+          <label class="block text-sm font-semibold text-gray-700 mb-2 text-left">Enter 4-Digit Admin PIN</label>
+          <input type="password" id="delete-pin" placeholder="****" maxlength="4" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 font-bold text-center tracking-widest focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 text-2xl">
+        </div>
+
         <div class="flex gap-3">
           <button onclick="UI.closeModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-xl font-bold transition-colors">Cancel</button>
           <button onclick="Bookings.confirmDelete(${id})" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl font-bold transition-colors shadow-md">Yes, Delete</button>
@@ -273,6 +287,14 @@ const Bookings = {
   },
 
   async confirmDelete(id) {
+    const pinInput = document.getElementById('delete-pin');
+    if (!pinInput || pinInput.value !== '1234') {
+      UI.showToast('Incorrect 4-digit password. Deletion cancelled.', 'error');
+      pinInput.value = '';
+      pinInput.focus();
+      return;
+    }
+
     try {
       await API.deleteBooking(id);
       UI.showToast('Booking deleted successfully');

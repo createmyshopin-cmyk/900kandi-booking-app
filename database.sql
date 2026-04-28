@@ -45,5 +45,6 @@ CREATE TABLE IF NOT EXISTS guest_checkins (
     location VARCHAR(255),
     instagram VARCHAR(255),
     profession VARCHAR(255),
+    id_proof VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
