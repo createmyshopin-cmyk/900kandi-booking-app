@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LuxeStay - Booking Status Manager</title>
+  <!-- Boxicons -->
+  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            primary: '#0f3d2e',
+            accent: '#1f7a5a',
+            bglight: '#f8fafc'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-bglight text-gray-800 font-sans antialiased min-h-screen pb-12">
+  
+  <!-- Header -->
+  <header class="bg-primary text-white py-6 shadow-md">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
+          <i class='bx bx-calendar-check text-2xl text-accent'></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-wide">Live Booking Manager</h1>
+          <p class="text-xs text-gray-300">Public Access Portal</p>
+        </div>
+      </div>
+      <a href="admin-frontend/index.html" class="text-sm font-medium bg-white/10 hover:bg-white/20 transition-colors px-4 py-2 rounded-lg flex items-center gap-2">
+        Admin Dashboard <i class='bx bx-right-arrow-alt'></i>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 mt-8">
+    
+    <!-- Controls -->
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col sm:flex-row gap-4 justify-between items-center mb-6">
+      <div class="relative w-full sm:w-72">
+        <i class='bx bx-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400'></i>
+        <input type="text" id="searchInput" placeholder="Search guests or mobile..." class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-accent transition-all">
+      </div>
+      <button onclick="loadBookings()" class="flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-primary transition-colors px-4 py-2 bg-gray-50 rounded-xl border border-gray-200">
+        <i class='bx bx-refresh text-lg'></i> Refresh List
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="flex flex-col items-center justify-center py-20">
+      <i class='bx bx-loader-alt animate-spin text-4xl text-accent mb-4'></i>
+      <p class="text-gray-500 font-medium">Syncing bookings...</p>
+    </div>
+
+    <!-- Bookings Grid -->
+    <div id="bookingsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6 hidden">
+      <!-- Cards injected here -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden flex-col items-center justify-center py-20 text-gray-500 bg-white rounded-2xl shadow-sm border border-gray-100">
+      <i class='bx bx-search-alt text-5xl mb-3 text-gray-300'></i>
+      <p class="text-lg font-bold text-gray-700">No bookings found</p>
+      <p class="text-sm mt-1">Try adjusting your search criteria.</p>
+    </div>
+
+  </main>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none"></div>
+
+  <!-- Load the Admin API Script -->
+  <script src="admin-frontend/js/api.js"></script>
+  
+  <script>
+    let allBookings = [];
+
+    // Format Date helper
+    const formatDate = (dateStr) => {
+      return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    };
+
+    // Get color for select background based on status
+    const getStatusColor = (status) => {
+      if (status === 'confirmed') return 'bg-green-50 text-green-700 border-green-200 focus:ring-green-500';
+      if (status === 'cancelled') return 'bg-red-50 text-red-700 border-red-200 focus:ring-red-500';
+      return 'bg-yellow-50 text-yellow-700 border-yellow-200 focus:ring-yellow-500';
+    };
+
+    // Show Toast
+    const showToast = (message, type = 'success') => {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      const bg = type === 'success' ? 'bg-gray-900' : 'bg-red-500';
+      const icon = type === 'success' ? 'bx-check-circle' : 'bx-error-circle';
+      
+      toast.className = `flex items-center gap-3 px-6 py-4 rounded-xl shadow-xl text-white transform translate-y-10 opacity-0 transition-all duration-300 ${bg}`;
+      toast.innerHTML = `<i class='bx ${icon} text-xl'></i><span class="font-medium text-sm">${message}</span>`;
+      
+      container.appendChild(toast);
+      requestAnimationFrame(() => toast.classList.remove('translate-y-10', 'opacity-0'));
+      setTimeout(() => {
+        toast.classList.add('translate-y-10', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    };
+
+    // Load Data
+    const loadBookings = async () => {
+      document.getElementById('loadingState').classList.remove('hidden');
+      document.getElementById('bookingsGrid').classList.add('hidden');
+      document.getElementById('emptyState').classList.add('hidden');
+
+      try {
+        allBookings = await API.getBookings();
+        renderBookings();
+      } catch (e) {
+        showToast('Failed to load bookings from database.', 'error');
+      } finally {
+        document.getElementById('loadingState').classList.add('hidden');
+      }
+    };
+
+    // Handle Status Change
+    const handleStatusChange = async (id, selectElement) => {
+      const newStatus = selectElement.value;
+      const originalStatus = selectElement.getAttribute('data-original');
+      
+      selectElement.disabled = true;
+      selectElement.classList.add('opacity-50');
+
+      try {
+        await API.updateBookingStatus(id, newStatus);
+        selectElement.setAttribute('data-original', newStatus);
+        selectElement.className = `w-full appearance-none rounded-lg border px-4 py-2.5 text-sm font-bold uppercase tracking-wider cursor-pointer outline-none transition-colors ${getStatusColor(newStatus)}`;
+        showToast(`Booking #${id} updated to ${newStatus}`);
+      } catch (e) {
+        showToast('Failed to update status', 'error');
+        selectElement.value = originalStatus; // Revert
+      } finally {
+        selectElement.disabled = false;
+        selectElement.classList.remove('opacity-50');
+      }
+    };
+
+    // Render Cards
+    const renderBookings = (query = '') => {
+      const grid = document.getElementById('bookingsGrid');
+      const emptyState = document.getElementById('emptyState');
+      
+      const filtered = allBookings.filter(b => 
+        b.guest_name.toLowerCase().includes(query) || 
+        b.mobile.includes(query)
+      );
+
+      if (filtered.length === 0) {
+        grid.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        emptyState.classList.add('flex');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      emptyState.classList.remove('flex');
+      grid.classList.remove('hidden');
+
+      grid.innerHTML = filtered.map(b => `
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col transition-shadow hover:shadow-md">
+          <div class="p-5 flex-1">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <h3 class="text-lg font-bold text-gray-900">${b.guest_name}</h3>
+                <p class="text-sm text-gray-500 flex items-center gap-1 mt-1"><i class='bx bx-phone'></i> ${b.mobile}</p>
+              </div>
+              <span class="bg-gray-100 text-gray-500 px-2.5 py-1 rounded-lg text-xs font-mono font-bold">#${b.id}</span>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
+              <div>
+                <p class="text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1">Check-in</p>
+                <p class="font-semibold text-gray-800 text-sm">${formatDate(b.checkin_date)}</p>
+              </div>
+              <div>
+                <p class="text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1">Check-out</p>
+                <p class="font-semibold text-gray-800 text-sm">${formatDate(b.checkout_date)}</p>
+              </div>
+            </div>
+            
+            <div class="mt-4 flex items-center justify-between text-sm text-gray-600">
+              <span class="flex items-center gap-1.5"><i class='bx bx-group text-lg'></i> ${b.guests} Guests</span>
+              <span class="flex items-center gap-1.5"><i class='bx bx-time text-lg'></i> ${formatDate(b.created_at)}</span>
+            </div>
+          </div>
+          
+          <div class="bg-gray-50/50 p-5 border-t border-gray-100 relative">
+            <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Update Status</label>
+            <div class="relative">
+              <select onchange="handleStatusChange(${b.id}, this)" data-original="${b.status}" class="w-full appearance-none rounded-lg border px-4 py-2.5 text-sm font-bold uppercase tracking-wider cursor-pointer outline-none transition-colors ${getStatusColor(b.status)}">
+                <option value="pending" ${b.status === 'pending' ? 'selected' : ''}>Pending</option>
+                <option value="confirmed" ${b.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
+                <option value="cancelled" ${b.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+              </select>
+              <i class='bx bx-chevron-down absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-current opacity-50 text-xl'></i>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    };
+
+    // Search binding
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      renderBookings(e.target.value.toLowerCase());
+    });
+
+    // Init
+    document.addEventListener('DOMContentLoaded', loadBookings);
+  </script>
+</body>
+</html>

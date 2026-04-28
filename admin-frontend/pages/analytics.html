@@ -1,0 +1,80 @@
+<div class="space-y-6">
+  
+  <div class="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+    <div>
+      <h2 class="text-xl font-bold text-gray-800">Analytics Overview</h2>
+      <p class="text-sm text-gray-500">Track booking performance and user engagement</p>
+    </div>
+    <div class="flex gap-2">
+      <select id="analytics-timeframe" class="rounded-xl border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent transition-shadow text-gray-700 bg-white cursor-pointer">
+        <option value="7">Last 7 Days</option>
+        <option value="30" selected>Last 30 Days</option>
+        <option value="90">Last 90 Days</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Main Line Chart -->
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 lg:col-span-2 relative">
+      <h3 class="text-lg font-bold text-gray-800 mb-4">Bookings Over Time</h3>
+      <div id="loading-line-chart" class="absolute inset-0 flex items-center justify-center bg-white/80 z-10 rounded-2xl">
+        <i class='bx bx-loader-alt animate-spin text-4xl text-accent'></i>
+      </div>
+      <div class="relative h-72 w-full">
+        <canvas id="bookingsLineChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Doughnut Chart -->
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative">
+      <h3 class="text-lg font-bold text-gray-800 mb-4">Booking Status</h3>
+      <div id="loading-doughnut-chart" class="absolute inset-0 flex items-center justify-center bg-white/80 z-10 rounded-2xl">
+        <i class='bx bx-loader-alt animate-spin text-4xl text-accent'></i>
+      </div>
+      <div class="relative h-72 w-full flex items-center justify-center">
+        <canvas id="statusDoughnutChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed Stats Row -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+      <div class="flex items-center gap-4 mb-2">
+        <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center text-xl">
+          <i class='bx bx-calendar-event'></i>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-500">Avg. Length of Stay</p>
+          <h4 id="stat-avg-stay" class="text-2xl font-bold text-gray-900">0 Days</h4>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+      <div class="flex items-center gap-4 mb-2">
+        <div class="w-12 h-12 rounded-full bg-green-50 text-green-500 flex items-center justify-center text-xl">
+          <i class='bx bx-check-shield'></i>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-500">Confirmation Rate</p>
+          <h4 id="stat-confirm-rate" class="text-2xl font-bold text-gray-900">0%</h4>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+      <div class="flex items-center gap-4 mb-2">
+        <div class="w-12 h-12 rounded-full bg-purple-50 text-purple-500 flex items-center justify-center text-xl">
+          <i class='bx bx-user-plus'></i>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-500">Avg. Guests / Booking</p>
+          <h4 id="stat-avg-guests" class="text-2xl font-bold text-gray-900">0</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

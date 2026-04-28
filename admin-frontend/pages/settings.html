@@ -1,0 +1,129 @@
+<div class="max-w-4xl mx-auto space-y-6">
+  
+  <div class="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+    <div>
+      <h2 class="text-xl font-bold text-gray-800">Platform Settings</h2>
+      <p class="text-sm text-gray-500">Manage your business preferences and system configurations</p>
+    </div>
+    <button onclick="Settings.saveAll()" class="bg-primary hover:bg-black text-white px-6 py-2.5 rounded-xl text-sm font-bold transition-colors shadow-md flex items-center gap-2">
+      <i class='bx bx-save text-lg'></i>
+      Save Changes
+    </button>
+  </div>
+
+  <div class="flex flex-col md:flex-row gap-6">
+    <!-- Sidebar Navigation for Settings -->
+    <div class="w-full md:w-64 flex-shrink-0">
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-2 space-y-1">
+        <button onclick="Settings.switchTab('general')" id="tab-btn-general" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors bg-accent text-white text-left">
+          <i class='bx bx-slider-alt text-xl'></i>
+          General Settings
+        </button>
+        <button onclick="Settings.switchTab('integrations')" id="tab-btn-integrations" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors text-gray-600 hover:bg-gray-50 text-left">
+          <i class='bx bxl-whatsapp text-xl'></i>
+          Integrations
+        </button>
+        <button onclick="Settings.switchTab('account')" id="tab-btn-account" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors text-gray-600 hover:bg-gray-50 text-left">
+          <i class='bx bx-user text-xl'></i>
+          Account Profile
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Settings Content -->
+    <div class="flex-1">
+      
+      <!-- General Settings Tab -->
+      <div id="tab-general" class="settings-tab bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-6 block">
+        <h3 class="text-lg font-bold text-gray-800 border-b border-gray-100 pb-4">General Configuration</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <label class="block text-sm font-semibold text-gray-700">Business Name</label>
+            <input type="text" id="setting-business-name" value="LuxeStay" class="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-shadow">
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-semibold text-gray-700">Support Email</label>
+            <input type="email" id="setting-email" value="support@luxestay.com" class="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-shadow">
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-semibold text-gray-700">Default Currency</label>
+            <select id="setting-currency" class="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-shadow bg-white">
+              <option value="INR" selected>INR (₹)</option>
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+            </select>
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-semibold text-gray-700">Tax Rate (%)</label>
+            <input type="number" id="setting-tax" value="18" class="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-shadow">
+          </div>
+        </div>
+      </div>
+
+      <!-- Integrations Tab -->
+      <div id="tab-integrations" class="settings-tab bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-6 hidden">
+        <div class="flex items-center justify-between border-b border-gray-100 pb-4">
+          <h3 class="text-lg font-bold text-gray-800">WhatsApp Integration</h3>
+          <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-bold uppercase">Active</span>
+        </div>
+        
+        <div class="space-y-4">
+          <p class="text-sm text-gray-500">Configure the primary WhatsApp number that receives lead submissions from the landing page.</p>
+          
+          <div class="space-y-2">
+            <label class="block text-sm font-semibold text-gray-700">Official WhatsApp Number (with country code)</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <i class='bx bxl-whatsapp text-gray-400 text-xl'></i>
+              </div>
+              <input type="text" id="setting-whatsapp" value="6281234567890" class="pl-12 w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-shadow">
+            </div>
+            <p class="text-xs text-gray-400 mt-1">Example: 919876543210 (No + or spaces)</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Account Profile Tab -->
+      <div id="tab-account" class="settings-tab bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-6 hidden">
+        <h3 class="text-lg font-bold text-gray-800 border-b border-gray-100 pb-4">Administrator Profile</h3>
+        
+        <div class="flex items-center gap-6 mb-6">
+          <div class="w-20 h-20 rounded-full bg-primary text-white flex items-center justify-center font-bold text-2xl shadow-inner">
+            AD
+          </div>
+          <div>
+            <button class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">Change Avatar</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <label class="block text-sm font-semibold text-gray-700">First Name</label>
+            <input type="text" value="Admin" class="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-shadow">
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-semibold text-gray-700">Last Name</label>
+            <input type="text" value="User" class="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-shadow">
+          </div>
+        </div>
+
+        <div class="pt-6 border-t border-gray-100">
+          <h4 class="text-md font-bold text-gray-800 mb-4">Security</h4>
+          <div class="space-y-4">
+            <div class="space-y-2">
+              <label class="block text-sm font-semibold text-gray-700">Current Password</label>
+              <input type="password" placeholder="••••••••" class="w-full max-w-md rounded-xl border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-shadow">
+            </div>
+            <div class="space-y-2">
+              <label class="block text-sm font-semibold text-gray-700">New Password</label>
+              <input type="password" class="w-full max-w-md rounded-xl border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-shadow">
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
